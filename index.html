@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LIGHT Assistente — o assistente do operador de grandMA2</title>
+<meta name="description" content="Menos tempo programando a grandMA2, mais tempo criando luz. Presets, cues, fades e busca de fixtures por canais DMX, em português. Baixe grátis.">
+<meta property="og:title" content="LIGHT Assistente">
+<meta property="og:description" content="O assistente do operador de grandMA2. Feito por iluminador, para iluminador.">
+<meta property="og:image" content="logo.webp">
+<meta name="theme-color" content="#07080a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307080a'/%3E%3Ccircle cx='32' cy='30' r='13' fill='%23ffcc00'/%3E%3Cpath d='M22 50h20' stroke='%23ffcc00' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --fundo: #07080a;
+  --fundo2: #0d0f13;
+  --cartao: #12151b;
+  --borda: #232833;
+  --texto: #e8eaee;
+  --suave: #9aa3b2;
+  --ambar: #ffcc00;
+  --ambar2: #ffb200;
+  --azul: #3aa0ff;
+  --verde: #22c55e;
+  --raio: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--fundo); color: var(--texto);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+.miolo { width: min(1120px, 100% - 32px); margin-inline: auto; }
+.mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+
+/* ---------- topo fixo ---------- */
+.barra {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(7, 8, 10, .78); backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+}
+.barra .miolo { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.marca { font-weight: 800; letter-spacing: 3px; font-size: 15px; }
+.marca span { color: var(--ambar); }
+.barra nav { display: flex; gap: 22px; align-items: center; font-size: 14px; color: var(--suave); }
+.barra nav a:hover { color: var(--texto); }
+@media (max-width: 720px) { .barra nav .so-pc { display: none; } }
+
+/* ---------- botões ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 15px 26px; border-radius: 12px; font-weight: 700; font-size: 16px;
+  transition: transform .15s ease, box-shadow .2s ease, background .2s;
+  cursor: pointer; border: 0;
+}
+.btn:active { transform: scale(.98); }
+.btn-ambar { background: var(--ambar); color: #111; box-shadow: 0 8px 30px rgba(255, 204, 0, .25); }
+.btn-ambar:hover { background: #ffd633; box-shadow: 0 10px 40px rgba(255, 204, 0, .4); }
+.btn-linha { border: 1px solid #39404d; color: var(--texto); background: rgba(255, 255, 255, .02); }
+.btn-linha:hover { border-color: #5a6372; }
+.btn-peq { padding: 9px 16px; font-size: 14px; border-radius: 10px; }
+
+/* ---------- herói ---------- */
+.heroi { position: relative; padding: 70px 0 40px; text-align: center; isolation: isolate; }
+.feixes { position: absolute; inset: -60px 0 0; z-index: -1; overflow: hidden; pointer-events: none; }
+/* feixes de SPOT: cone largo, borda macia, some suave no fim (sem corte),
+   pan lento como moving de verdade (cada um no seu tempo) */
+.feixe {
+  position: absolute; top: -40px; width: 420px; height: 125%; margin-left: -210px;
+  transform-origin: 50% 0; opacity: .85;
+  animation: pan 26s cubic-bezier(.45, 0, .55, 1) infinite alternate;
+}
+.feixe::before {                 /* o cone de luz */
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 50% 100% at 50% 0, rgba(255, 210, 60, .30), rgba(255, 190, 40, .10) 45%, transparent 75%);
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+  filter: blur(22px);
+  -webkit-mask-image: linear-gradient(180deg, #000 0, #000 35%, transparent 92%);
+          mask-image: linear-gradient(180deg, #000 0, #000 35%, transparent 92%);
+}
+.feixe::after {                  /* a lente do aparelho, lá em cima */
+  content: ""; position: absolute; top: 18px; left: 50%; width: 46px; height: 22px; margin-left: -23px;
+  border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 236, 170, .9), rgba(255, 200, 60, .25) 55%, transparent 72%);
+  filter: blur(3px);
+}
+.feixe.azul::before { background: radial-gradient(ellipse 50% 100% at 50% 0, rgba(90, 170, 255, .30), rgba(58, 150, 255, .10) 45%, transparent 75%); }
+.feixe.azul::after { background: radial-gradient(ellipse, rgba(200, 228, 255, .9), rgba(80, 160, 255, .25) 55%, transparent 72%); }
+.feixe:nth-child(1) { left: 12%; animation-duration: 28s; animation-delay: -6s; }
+.feixe:nth-child(2) { left: 37%; animation-duration: 23s; animation-delay: -14s; }
+.feixe:nth-child(3) { left: 63%; animation-duration: 31s; animation-delay: -3s; }
+.feixe:nth-child(4) { left: 88%; animation-duration: 25s; animation-delay: -19s; }
+@keyframes pan { from { transform: rotate(-24deg); } to { transform: rotate(24deg); } }
+@media (max-width: 640px) { .feixe { width: 260px; margin-left: -130px; } .feixe:nth-child(2), .feixe:nth-child(3) { display: none; } .feixe:nth-child(1) { left: 20%; } .feixe:nth-child(4) { left: 80%; } }
+.heroi::after {
+  content: ""; position: absolute; inset: auto 0 0; height: 160px; z-index: -1;
+  background: linear-gradient(180deg, transparent, var(--fundo));
+}
+.heroi .logo { width: min(560px, 92%); margin: 0 auto 10px; filter: drop-shadow(0 0 40px rgba(120, 200, 255, .25)); }
+.selo {
+  display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--suave);
+  border: 1px solid var(--borda); border-radius: 999px; padding: 6px 14px; margin-bottom: 22px;
+  background: rgba(255, 255, 255, .02);
+}
+.selo i { width: 8px; height: 8px; border-radius: 50%; background: var(--verde); box-shadow: 0 0 10px var(--verde); }
+h1 { font-size: clamp(32px, 6vw, 58px); line-height: 1.08; letter-spacing: -1.5px; font-weight: 800; }
+h1 em { font-style: normal; color: var(--ambar); }
+.sub { font-size: clamp(16px, 2.2vw, 19px); color: var(--suave); max-width: 640px; margin: 18px auto 30px; }
+.acoes { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.nota { font-size: 13px; color: var(--suave); margin-top: 14px; }
+
+/* ---------- demonstração ---------- */
+.demo { margin: 50px auto 0; max-width: 760px; text-align: left; }
+.janela { background: #0b0d11; border: 1px solid var(--borda); border-radius: var(--raio); overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 204, 0, .05); }
+.janela .tit { display: flex; align-items: center; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--borda);
+  font-size: 12px; color: var(--suave); }
+.janela .tit b { width: 10px; height: 10px; border-radius: 50%; background: #2a2f39; }
+.janela .tit span { margin-left: 8px; }
+.janela .corpo { padding: 20px; display: grid; gap: 14px; min-height: 250px; }
+.fala { justify-self: end; background: #1f2530; padding: 11px 15px; border-radius: 14px 14px 4px 14px; max-width: 88%; font-size: 15px; }
+.resposta { background: rgba(255, 204, 0, .06); border: 1px solid rgba(255, 204, 0, .25); padding: 14px 16px;
+  border-radius: 14px 14px 14px 4px; max-width: 92%; font-size: 14.5px; }
+.resposta .rot { font-size: 11px; letter-spacing: 1.5px; color: var(--ambar); font-weight: 700; margin-bottom: 6px; }
+.resposta ul { margin: 8px 0 0 18px; color: #cfd5de; }
+.resposta .ok { margin-top: 10px; display: inline-flex; gap: 8px; }
+.resposta .ok span { font-size: 12.5px; padding: 6px 12px; border-radius: 8px; background: var(--ambar); color: #111; font-weight: 700; }
+.resposta .ok span.n { background: transparent; color: var(--suave); border: 1px solid var(--borda); font-weight: 500; }
+.digitando::after { content: "▍"; color: var(--ambar); animation: pisca 1s steps(1) infinite; }
+@keyframes pisca { 50% { opacity: 0; } }
+
+/* ---------- seções ---------- */
+section { padding: 80px 0; }
+.rotulo { color: var(--ambar); font-size: 12.5px; letter-spacing: 2.5px; font-weight: 700; text-transform: uppercase; }
+h2 { font-size: clamp(26px, 4vw, 40px); letter-spacing: -1px; line-height: 1.15; margin: 10px 0 14px; font-weight: 800; }
+.lead { color: var(--suave); max-width: 620px; font-size: 17px; }
+.centro { text-align: center; }
+.centro .lead { margin-inline: auto; }
+
+/* dor */
+.dor { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 36px; }
+.dor div { background: var(--fundo2); border: 1px solid var(--borda); border-radius: var(--raio); padding: 22px; }
+.dor b { display: block; font-size: 30px; color: var(--texto); letter-spacing: -1px; }
+.dor p { color: var(--suave); font-size: 14.5px; margin-top: 4px; }
+@media (max-width: 760px) { .dor { grid-template-columns: 1fr; } }
+
+/* recursos */
+.grade { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-top: 40px; }
+.card { background: var(--cartao); border: 1px solid var(--borda); border-radius: var(--raio); padding: 26px;
+  position: relative; overflow: hidden; transition: border-color .2s, transform .2s; }
+.card:hover { border-color: #39404d; transform: translateY(-2px); }
+.card.grande { grid-column: span 3; }
+.card.media { grid-column: span 2; }
+.card .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 16px;
+  background: rgba(255, 204, 0, .1); color: var(--ambar); font-size: 22px; }
+.card.azul .ic { background: rgba(58, 160, 255, .1); color: var(--azul); }
+.card h3 { font-size: 19px; margin-bottom: 8px; letter-spacing: -.3px; }
+.card p { color: var(--suave); font-size: 15px; }
+.card .tag { position: absolute; top: 18px; right: 18px; font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  color: var(--ambar); border: 1px solid rgba(255, 204, 0, .35); border-radius: 999px; padding: 3px 9px; }
+.canais { display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+.canais span { font-size: 12px; padding: 5px 9px; border-radius: 7px; background: #0b0d11; border: 1px solid var(--borda); color: #cfd5de; }
+.canais span.sim { border-color: rgba(34, 197, 94, .5); color: #86efac; }
+@media (max-width: 900px) { .card.grande, .card.media { grid-column: span 6; } }
+
+/* seguro */
+.seguro { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
+.lista { display: grid; gap: 14px; margin-top: 24px; }
+.lista div { display: flex; gap: 14px; align-items: flex-start; }
+.lista i { flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-style: normal;
+  background: rgba(34, 197, 94, .12); color: var(--verde); font-size: 14px; font-weight: 800; margin-top: 2px; }
+.lista b { display: block; }
+.lista p { color: var(--suave); font-size: 14.5px; }
+.modos { background: var(--cartao); border: 1px solid var(--borda); border-radius: var(--raio); padding: 24px; }
+.modos .linha { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--borda); }
+.modos .linha:last-child { border: 0; }
+.modos small { color: var(--suave); display: block; font-size: 13.5px; }
+.chave { width: 46px; height: 26px; border-radius: 999px; background: #2a2f39; position: relative; flex: none; }
+.chave::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #8b93a1; transition: .3s; }
+.chave.on { background: rgba(255, 204, 0, .3); }
+.chave.on::after { left: 23px; background: var(--ambar); }
+@media (max-width: 860px) { .seguro { grid-template-columns: 1fr; } }
+
+/* passos */
+.passos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; counter-reset: p; }
+.passos div { background: var(--fundo2); border: 1px solid var(--borda); border-radius: var(--raio); padding: 26px; }
+.passos div::before { counter-increment: p; content: counter(p); display: grid; place-items: center; width: 36px; height: 36px;
+  border-radius: 50%; border: 1px solid var(--ambar); color: var(--ambar); font-weight: 800; margin-bottom: 14px; }
+.passos h3 { font-size: 17px; margin-bottom: 4px; }
+.passos p { color: var(--suave); font-size: 14.5px; }
+@media (max-width: 760px) { .passos { grid-template-columns: 1fr; } }
+
+/* vídeo */
+.video { margin-top: 36px; aspect-ratio: 16 / 9; border-radius: var(--raio); border: 1px solid var(--borda); overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #1a1f29, #0b0d11 70%); display: grid; place-items: center; color: var(--suave); }
+.video iframe { width: 100%; height: 100%; border: 0; }
+.video .play { width: 74px; height: 74px; border-radius: 50%; background: var(--ambar); display: grid; place-items: center; margin: 0 auto 12px;
+  box-shadow: 0 0 0 10px rgba(255, 204, 0, .12); }
+.video .play::after { content: ""; border-left: 22px solid #111; border-top: 13px solid transparent; border-bottom: 13px solid transparent; margin-left: 6px; }
+
+/* planos */
+.ciclo { display: inline-flex; background: var(--fundo2); border: 1px solid var(--borda); border-radius: 12px; padding: 4px; margin-top: 26px; }
+.ciclo button { background: none; border: 0; color: var(--suave); font: inherit; font-weight: 600; font-size: 14px; padding: 9px 18px; border-radius: 9px; cursor: pointer; }
+.ciclo button.ativo { background: #232833; color: var(--texto); }
+.ciclo button em { font-style: normal; color: var(--verde); font-size: 12px; margin-left: 4px; }
+.planos { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 30px; max-width: 900px; margin-inline: auto; text-align: left; }
+.plano { background: var(--cartao); border: 1px solid var(--borda); border-radius: 20px; padding: 30px; display: flex; flex-direction: column; }
+.plano.full { border-color: rgba(255, 204, 0, .55); background: linear-gradient(180deg, rgba(255, 204, 0, .07), var(--cartao) 40%);
+  box-shadow: 0 20px 60px rgba(255, 204, 0, .08); position: relative; }
+.plano.full .destaque { position: absolute; top: -13px; left: 30px; background: var(--ambar); color: #111; font-size: 12px; font-weight: 800;
+  padding: 4px 12px; border-radius: 999px; letter-spacing: .5px; }
+.plano h3 { font-size: 20px; }
+.plano .desc { color: var(--suave); font-size: 14.5px; margin: 4px 0 18px; }
+.preco { display: flex; align-items: baseline; gap: 6px; }
+.preco b { font-size: 42px; letter-spacing: -1.5px; }
+.preco span { color: var(--suave); }
+.preco-nota { color: var(--suave); font-size: 13.5px; min-height: 22px; margin-top: 2px; }
+.plano ul { list-style: none; display: grid; gap: 10px; margin: 22px 0 26px; flex: 1; }
+.plano li { display: flex; gap: 10px; font-size: 14.5px; color: #cfd5de; }
+.plano li::before { content: "✓"; color: var(--verde); font-weight: 800; flex: none; }
+.plano li.lim::before { content: "•"; color: var(--suave); }
+.plano li.lim { color: var(--suave); }
+.plano .btn { width: 100%; }
+.pagamento { color: var(--suave); font-size: 13px; text-align: center; margin-top: 18px; }
+@media (max-width: 760px) { .planos { grid-template-columns: 1fr; } }
+
+/* criador */
+.criador { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; background: var(--fundo2);
+  border: 1px solid var(--borda); border-radius: 20px; padding: 34px; }
+.criador .foto { width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ffd633, #b37400);
+  display: grid; place-items: center; font-weight: 800; font-size: 34px; color: #111; }
+.criador blockquote { font-size: clamp(17px, 2.2vw, 20px); line-height: 1.5; }
+.criador cite { display: block; margin-top: 12px; color: var(--suave); font-style: normal; font-size: 14.5px; }
+@media (max-width: 640px) { .criador { grid-template-columns: 1fr; text-align: center; } .criador .foto { margin: 0 auto; } }
+
+/* faq */
+.faq { max-width: 760px; margin: 36px auto 0; display: grid; gap: 10px; }
+.faq details { background: var(--fundo2); border: 1px solid var(--borda); border-radius: 14px; padding: 4px 20px; }
+.faq summary { cursor: pointer; padding: 16px 0; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+.faq summary::after { content: "+"; color: var(--ambar); font-size: 22px; line-height: 1; transition: transform .2s; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq summary::-webkit-details-marker { display: none; }
+.faq p { color: var(--suave); padding-bottom: 18px; font-size: 15px; }
+
+/* chamada final */
+.final { text-align: center; padding: 90px 0; position: relative; overflow: hidden; }
+.final::before { content: ""; position: absolute; left: 50%; top: 0; width: 700px; height: 700px; transform: translate(-50%, -40%);
+  background: radial-gradient(circle, rgba(255, 204, 0, .14), transparent 60%); z-index: -1; }
+
+footer { border-top: 1px solid var(--borda); padding: 34px 0 40px; color: var(--suave); font-size: 13.5px; }
+footer .miolo { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: center; }
+footer .redes { display: flex; gap: 16px; }
+footer .redes a:hover { color: var(--texto); }
+.aviso-marca { width: 100%; font-size: 12px; color: #6b7280; margin-top: 8px; }
+
+.video[hidden] { display: none; }
+
+/* ---------- carrossel de telas ---------- */
+.carrossel { position: relative; margin-top: 44px; border-radius: 18px; overflow: hidden; border: 1px solid var(--borda);
+  background: #0b0d11; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+.car-trilho { display: flex; transition: transform .7s cubic-bezier(.65, 0, .35, 1); touch-action: pan-y; }
+.car-trilho figure { flex: 0 0 100%; position: relative; }
+.car-trilho img { width: 100%; height: auto; aspect-ratio: 1280 / 796; object-fit: cover; }
+.car-trilho figcaption { position: absolute; left: 16px; bottom: 16px; display: flex; align-items: center; gap: 10px;
+  background: rgba(7, 8, 10, .82); backdrop-filter: blur(8px); border: 1px solid rgba(255, 204, 0, .35); border-radius: 12px;
+  padding: 9px 16px 9px 9px; font-weight: 700; font-size: clamp(13px, 2vw, 16px); text-align: left; }
+.car-trilho figcaption b { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--ambar); color: #111; font-size: 13px; flex: none; }
+.car-seta { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 1px solid #39404d;
+  background: rgba(7, 8, 10, .7); color: var(--texto); font-size: 26px; line-height: 1; cursor: pointer; display: grid; place-items: center; padding-bottom: 3px; }
+.car-seta:hover { border-color: var(--ambar); color: var(--ambar); }
+.car-seta.esq { left: 12px; } .car-seta.dir { right: 12px; }
+.car-pontos { position: absolute; right: 16px; bottom: 22px; display: flex; gap: 6px; }
+.car-pontos button { width: 9px; height: 9px; border-radius: 999px; border: 0; background: rgba(255, 255, 255, .35); cursor: pointer; padding: 0; transition: .3s; }
+.car-pontos button.on { width: 24px; background: var(--ambar); }
+@media (max-width: 640px) { .car-seta { width: 36px; height: 36px; font-size: 22px; } .car-pontos { right: 50%; transform: translateX(50%); bottom: 8px; }
+  .car-trilho figcaption { left: 8px; bottom: 24px; padding: 6px 12px 6px 6px; } }
+
+/* ---------- logo em código (pixels de LED) ---------- */
+.logo-led { position: relative; width: min(600px, 94%); margin: 0 auto 18px; }
+.logo-led canvas { width: 100%; height: auto; display: block; aspect-ratio: 900 / 330; }
+.logo-led .sub { font-weight: 300; letter-spacing: .55em; font-size: clamp(14px, 2.6vw, 24px); color: #dfe9f3;
+  margin-top: -2%; padding-left: .55em; text-shadow: 0 0 18px rgba(140, 200, 255, .45); }
+
+/* ---------- simulador ---------- */
+.sim { margin-top: 36px; text-align: left; }
+.sim-abas { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+.sim-abas button { background: var(--fundo2); border: 1px solid var(--borda); color: var(--suave); font: inherit; font-weight: 600;
+  font-size: 14.5px; padding: 11px 18px; border-radius: 12px; cursor: pointer; transition: .2s; }
+.sim-abas button:hover { color: var(--texto); border-color: #39404d; }
+.sim-abas button.ativo { color: #111; background: var(--ambar); border-color: var(--ambar); }
+.sim-janela { background: #0b0d11; border: 1px solid var(--borda); border-radius: 18px; overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 204, 0, .05); }
+.sim-tit { display: flex; align-items: center; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--borda); font-size: 12px; color: var(--suave); }
+.sim-tit b { width: 10px; height: 10px; border-radius: 50%; background: #2a2f39; }
+.sim-tit span { margin-left: 8px; }
+.sim-tit em { margin-left: auto; font-style: normal; color: var(--verde); font-size: 11.5px; }
+.sim-opcoes { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 16px; border-bottom: 1px solid var(--borda); background: #0d1015; }
+.sim-opcoes .q { font-size: 12.5px; color: var(--suave); width: 100%; margin-bottom: 2px; }
+.sim-opcoes button { display: inline-flex; align-items: center; gap: 8px; background: #141821; border: 1px solid #2c3340; color: var(--texto);
+  font: inherit; font-size: 14px; padding: 8px 14px 8px 8px; border-radius: 999px; cursor: pointer; transition: .2s; text-align: left; }
+.sim-opcoes button:hover { border-color: var(--ambar); }
+.sim-opcoes button.ativo { border-color: var(--ambar); background: rgba(255, 204, 0, .1); }
+.sim-opcoes button i { font-style: normal; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  background: var(--ambar); color: #111; font-weight: 800; font-size: 12.5px; }
+.sim-tela { height: 470px; overflow-y: auto; padding: 18px; position: relative; scroll-behavior: smooth; }
+.sim-vazio { height: 100%; display: grid; place-items: center; text-align: center; color: var(--suave); font-size: 15px; }
+.sim-vazio b { display: block; font-size: 34px; margin-bottom: 8px; }
+.sim-nota { color: var(--suave); font-size: 13px; text-align: center; margin-top: 14px; }
+.sim-toast { position: absolute; left: 50%; bottom: 16px; transform: translate(-50%, 20px); opacity: 0; transition: .3s; pointer-events: none;
+  background: #1f2530; border: 1px solid #39404d; color: var(--texto); font-size: 13.5px; padding: 10px 16px; border-radius: 10px; width: max-content; max-width: 90%; }
+.sim-toast.vis { opacity: 1; transform: translate(-50%, 0); }
+@media (max-width: 640px) { .sim-tela { height: 540px; padding: 14px; } }
+
+/* conversa */
+.cv { display: grid; gap: 14px; }
+.cv .fala, .cv .resposta { animation: entra .35s ease both; }
+@keyframes entra { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.cv .resposta { max-width: 96%; }
+.cv .resposta p { color: #dfe4ea; }
+.cmd { margin-top: 12px; background: #050608; border: 1px solid #2a2f39; border-radius: 10px; padding: 12px 14px; }
+.cmd .t { font-size: 11px; letter-spacing: 1.5px; color: var(--suave); font-weight: 700; margin-bottom: 6px; display: flex; justify-content: space-between; gap: 8px; }
+.cmd .t span { color: var(--verde); letter-spacing: 0; font-weight: 600; }
+.cmd code { display: block; font-family: "JetBrains Mono", monospace; color: var(--ambar); font-size: 14px; word-break: break-word; }
+.dica { margin-top: 10px; font-size: 13.5px; color: #cfd5de; }
+.dica b { color: var(--ambar); }
+.perg-final { margin-top: 10px; font-size: 14px; }
+.cv-botoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.cv-botoes button { font: inherit; font-size: 13px; padding: 8px 12px; border-radius: 8px; cursor: pointer; border: 1px solid #39404d;
+  background: #141821; color: var(--texto); }
+.cv-botoes button.p { background: var(--ambar); color: #111; border-color: var(--ambar); font-weight: 700; }
+.pensando { display: inline-flex; gap: 5px; padding: 12px 16px; background: rgba(255, 204, 0, .06); border: 1px solid rgba(255, 204, 0, .2);
+  border-radius: 14px 14px 14px 4px; width: max-content; }
+.pensando i { width: 7px; height: 7px; border-radius: 50%; background: var(--ambar); animation: pula 1s infinite ease-in-out; }
+.pensando i:nth-child(2) { animation-delay: .15s; } .pensando i:nth-child(3) { animation-delay: .3s; }
+@keyframes pula { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-4px); } }
+.cv-entrada { position: sticky; bottom: -18px; margin: 18px -18px -18px; padding: 12px 18px; background: #0d1015; border-top: 1px solid var(--borda);
+  display: flex; gap: 8px; }
+.cv-entrada div { flex: 1; background: #141821; border: 1px solid #2c3340; border-radius: 10px; padding: 10px 12px; color: #6b7280; font-size: 14px; }
+.cv-entrada span { background: var(--ambar); color: #111; border-radius: 10px; padding: 10px 14px; font-weight: 800; }
+
+/* busca de personalidade */
+.bx-campo { display: flex; gap: 8px; flex-wrap: wrap; align-items: stretch; }
+.bx-modo { display: inline-flex; background: #141821; border: 1px solid #2c3340; border-radius: 10px; padding: 3px; }
+.bx-modo span { padding: 7px 12px; border-radius: 8px; font-size: 13px; color: var(--suave); }
+.bx-modo span.on { background: #262c38; color: var(--texto); }
+.bx-input { flex: 1; min-width: 180px; background: #141821; border: 1px solid #2c3340; border-radius: 10px; padding: 10px 12px; font-size: 15px; }
+.bx-btn { background: var(--ambar); color: #111; border-radius: 10px; padding: 10px 16px; font-weight: 800; font-size: 14px; display: grid; place-items: center; }
+.bx-info { color: var(--suave); font-size: 13px; margin: 14px 0 8px; }
+.bx-res { display: grid; gap: 8px; }
+.bx-item { background: #12151b; border: 1px solid var(--borda); border-radius: 12px; padding: 12px 14px; cursor: pointer; animation: entra .35s ease both; transition: border-color .2s; }
+.bx-item:hover, .bx-item.aberto { border-color: rgba(255, 204, 0, .5); }
+.bx-item .l1 { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.bx-item .nome { font-weight: 700; }
+.bx-item .fab { color: var(--suave); font-size: 13px; }
+.bx-item .ch { font-size: 12px; font-weight: 700; color: var(--ambar); border: 1px solid rgba(255, 204, 0, .4); border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+.bx-mapa { display: none; margin-top: 12px; }
+.bx-item.aberto .bx-mapa { display: block; }
+.bx-mapa .g { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+.bx-mapa .g div { background: #0b0d11; border: 1px solid #262c38; border-radius: 8px; padding: 6px 8px; font-size: 12px; }
+.bx-mapa .g div b { color: var(--ambar); font-family: "JetBrains Mono", monospace; margin-right: 6px; }
+.bx-mapa .g div small { display: block; color: var(--suave); font-size: 11px; }
+.bx-mapa .acoes-bx { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+/* financeiro */
+.fn { display: grid; grid-template-columns: 180px 1fr; gap: 16px; min-height: 100%; }
+.fn-menu { display: grid; gap: 4px; align-content: start; }
+.fn-menu div { font-size: 13.5px; padding: 8px 10px; border-radius: 8px; color: var(--suave); }
+.fn-menu div.on { background: rgba(255, 204, 0, .1); color: var(--ambar); font-weight: 700; }
+.fn-topo { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
+.fn-topo h4 { font-size: 18px; }
+.fn-topo span { background: var(--ambar); color: #111; font-weight: 800; font-size: 13px; padding: 8px 12px; border-radius: 9px; }
+.fn-form { background: #12151b; border: 1px solid var(--borda); border-radius: 12px; padding: 16px; display: grid; gap: 10px; animation: entra .35s ease both; }
+.fn-form .t { font-weight: 800; font-size: 15px; }
+.fn-lin { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fn-campo label { display: block; font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; color: var(--suave); margin-bottom: 4px; }
+.fn-campo div { background: #0b0d11; border: 1px solid #2c3340; border-radius: 8px; padding: 8px 10px; min-height: 36px; font-size: 14px; }
+.fn-campo div.foco { border-color: var(--ambar); }
+.fn-salvar { justify-self: end; background: var(--ambar); color: #111; font-weight: 800; font-size: 13.5px; padding: 9px 16px; border-radius: 9px; }
+.fn-tab { width: 100%; border-collapse: collapse; font-size: 13.5px; animation: entra .35s ease both; }
+.fn-tab th { text-align: left; font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; color: var(--suave); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--borda); }
+.fn-tab td { padding: 10px 8px; border-bottom: 1px solid #1a1e26; }
+.fn-tab tr.novo td { background: rgba(34, 197, 94, .08); }
+.fn-res { display: grid; gap: 6px; }
+.fn-res .it { display: flex; justify-content: space-between; gap: 10px; background: #12151b; border: 1px solid var(--borda); border-radius: 9px; padding: 9px 12px; font-size: 14px; animation: entra .3s ease both; }
+.fn-res .it b { font-family: "JetBrains Mono", monospace; font-weight: 500; }
+.fn-res .it.ganho b { color: var(--verde); }
+.fn-res .total { margin-top: 6px; background: rgba(34, 197, 94, .08); border: 1px solid rgba(34, 197, 94, .45); border-radius: 12px; padding: 14px; animation: entra .4s ease both; }
+.fn-res .total small { color: var(--suave); font-size: 11px; letter-spacing: .5px; text-transform: uppercase; }
+.fn-res .total div { font-size: 26px; font-weight: 800; color: #86efac; }
+.fn-res .total p { color: #cfd5de; font-size: 13.5px; margin-top: 4px; }
+@media (max-width: 640px) { .fn { grid-template-columns: 1fr; } .fn-menu { display: flex; overflow-x: auto; gap: 4px; } .fn-menu div { white-space: nowrap; } .fn-lin { grid-template-columns: 1fr; } }
+
+/* entrada suave */
+.surge { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+.surge.visto { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .surge { opacity: 1; transform: none; }
+  /* decisão do dono: os movings continuam, só que mais lentos (sem piscar, sem tranco) */
+  .feixes .feixe { animation: pan 60s cubic-bezier(.45, 0, .55, 1) infinite alternate !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <div class="miolo">
+    <a href="#" class="marca">LIGHT <span>ASSISTENTE</span></a>
+    <nav>
+      <a href="#experimente" class="so-pc">Experimente</a>
+      <a href="#recursos" class="so-pc">Recursos</a>
+      <a href="#como" class="so-pc">Como funciona</a>
+      <a href="#planos" class="so-pc">Planos</a>
+      <a href="#baixar" class="btn btn-ambar btn-peq" data-baixar>Baixar grátis</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ======================= HERÓI ======================= -->
+  <div class="heroi">
+    <div class="feixes" aria-hidden="true">
+      <div class="feixe"></div><div class="feixe azul"></div><div class="feixe"></div><div class="feixe azul"></div>
+    </div>
+    <div class="miolo">
+      <div class="logo-led" role="img" aria-label="LIGHT Assistente">
+        <canvas id="logoLed" width="900" height="330"></canvas>
+        <div class="sub">ASSISTENTE</div>
+      </div>
+      <div class="selo"><i></i> Para operadores de grandMA2 · onPC e console</div>
+      <h1>Menos tempo programando.<br><em>Mais tempo criando luz.</em></h1>
+      <p class="sub">O LIGHT faz por você o trabalho repetitivo da grandMA2 — presets, cues, fades, delays — a partir de frases simples em português. E ainda acha a fixture certa pela sequência de canais DMX.</p>
+      <div class="acoes">
+        <a href="#baixar" class="btn btn-ambar" data-baixar>⬇ Baixar grátis para Windows</a>
+        <a href="#planos" class="btn btn-linha">Ver planos</a>
+      </div>
+      <p class="nota">Plano gratuito de verdade · sem cartão para começar</p>
+
+      <div class="demo surge" aria-label="Exemplo de uso do LIGHT">
+        <div class="janela">
+          <div class="tit"><b></b><b></b><b></b><span class="mono">LIGHT · conectado na grandMA2</span></div>
+          <div class="corpo" id="demo"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= DOR ======================= -->
+  <section>
+    <div class="miolo centro surge">
+      <div class="rotulo">A real do show-prep</div>
+      <h2>Você não virou iluminador para digitar comando.</h2>
+      <p class="lead">Montar presets um por um, gravar cue por cue, caçar o arquivo da fixture na internet na véspera do evento. O LIGHT tira esse peso das suas costas.</p>
+      <div class="dor">
+        <div><b>11 presets</b><p>"dimmer de 0 até 100 de 10 em 10" — uma frase, o LIGHT grava todos no pool.</p></div>
+        <div><b>+29 mil</b><p>fixtures na biblioteca para buscar pela sequência de canais ou pelo nome.</p></div>
+        <div><b>Português</b><p>Fale como você fala no palco. O LIGHT traduz para a sintaxe da mesa.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= RECURSOS ======================= -->
+  <section id="recursos" style="padding-top:20px">
+    <div class="miolo">
+      <div class="surge">
+        <div class="rotulo">O que o LIGHT faz</div>
+        <h2>Tudo o que um operador precisa,<br>num assistente só.</h2>
+      </div>
+      <div class="grade">
+        <div class="card grande surge">
+          <div class="ic">⚡</div>
+          <h3>Automação da grandMA2</h3>
+          <p>Presets de cor, dimmer, beam, posição, focus e gobo. Cues com fade e delay. Você descreve, o LIGHT manda para a mesa pela rede (Telnet) — sem decorar sintaxe.</p>
+        </div>
+        <div class="card grande azul surge">
+          <span class="tag">DIFERENCIAL</span>
+          <div class="ic">🔎</div>
+          <h3>Ache a fixture pelos canais DMX</h3>
+          <p>Sabe a ordem dos canais mas não o modelo? Digite a sequência e o LIGHT encontra. Baixe o arquivo e leve no pendrive para a mesa.</p>
+          <div class="canais mono"><span class="sim">Dimmer</span><span class="sim">Shutter</span><span class="sim">Pan</span><span class="sim">Tilt</span><span>Color</span><span>Gobo</span><span>…</span></div>
+        </div>
+        <div class="card media surge">
+          <div class="ic">💬</div>
+          <h3>Modo Conversa</h3>
+          <p>Dúvida de MA2 no meio da montagem? Pergunte em português. Respostas baseadas em procedimentos testados na mesa — sem inventar comando.</p>
+        </div>
+        <div class="card media azul surge">
+          <div class="ic">💰</div>
+          <h3>Financeiro do iluminador</h3>
+          <p>Cachês, gastos e agenda num lugar só. Anote pelo WhatsApp: "Light, gastei 20 no uber".</p>
+        </div>
+        <div class="card media surge">
+          <div class="ic">🎬</div>
+          <h3>Videoaulas curtas</h3>
+          <p>Aulas diretas ao ponto, das dúvidas reais de quem opera. Aprenda no seu ritmo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= SEGURANÇA ======================= -->
+  <section>
+    <div class="miolo seguro">
+      <div class="surge">
+        <div class="rotulo">Feito para show ao vivo</div>
+        <h2>Rápido quando precisa.<br>Cuidadoso sempre.</h2>
+        <p class="lead">Show não tem "desfazer" na frente do público. Por isso o LIGHT trabalha com regras claras.</p>
+        <div class="lista">
+          <div><i>✓</i><div><b>Comandos gerados por código, não por "chute" de IA</b><p>Cada automação segue regras fixas e testadas na grandMA2 onPC.</p></div></div>
+          <div><i>✓</i><div><b>Travas que nunca desligam</b><p>Apagar show, resetar ou sobrescrever cue existente: o LIGHT não faz sem você.</p></div></div>
+          <div><i>✓</i><div><b>Tudo fica registrado</b><p>Você sabe exatamente o que foi enviado para a mesa.</p></div></div>
+        </div>
+      </div>
+      <div class="modos surge">
+        <div class="linha"><div><b>Modo Construção</b><small>Mostra o plano ("vou gravar 11 presets no pool 1") e pede o seu OK.</small></div><div class="chave on" id="chC"></div></div>
+        <div class="linha"><div><b>Modo Operação</b><small>No show: executa direto, sem pergunta atrapalhando.</small></div><div class="chave" id="chO"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= COMO FUNCIONA ======================= -->
+  <section id="como">
+    <div class="miolo centro">
+      <div class="surge">
+        <div class="rotulo">Como funciona</div>
+        <h2>Em 3 passos você está operando.</h2>
+      </div>
+      <div class="passos" style="text-align:left">
+        <div class="surge"><h3>Baixe e instale</h3><p>Instalador para Windows. Leva poucos minutos.</p></div>
+        <div class="surge"><h3>Crie sua conta grátis</h3><p>E-mail e senha. Já começa no plano Gratuito, sem cartão.</p></div>
+        <div class="surge"><h3>Conecte na grandMA2</h3><p>onPC ou console na mesma rede. Fale o que quer, o LIGHT faz.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= SIMULADOR ======================= -->
+  <section id="experimente" style="padding-top:10px">
+    <div class="miolo centro">
+      <div class="surge">
+        <div class="rotulo">Experimente agora</div>
+        <h2>Mexa no LIGHT antes de instalar.</h2>
+        <p class="lead">Escolha uma situação real e veja o LIGHT trabalhando — com as mesmas respostas que o app dá.</p>
+      </div>
+      <div class="sim surge">
+        <div class="sim-abas" role="tablist">
+          <button type="button" data-sim="conversa" class="ativo">💬 Modo Conversa</button>
+          <button type="button" data-sim="busca">🔎 Procurar personalidade</button>
+          <button type="button" data-sim="fin">💰 Financeiro</button>
+        </div>
+        <div class="sim-janela">
+          <div class="sim-tit"><b></b><b></b><b></b><span class="mono" id="simTitulo">LIGHT · Modo Conversa</span><em>● demonstração</em></div>
+          <div class="sim-opcoes" id="simOpcoes"></div>
+          <div class="sim-tela" id="simTela"></div>
+        </div>
+        <p class="sim-nota" id="simNota"></p>
+      </div>
+      <div class="video" id="video" hidden></div>
+      <div class="carrossel surge" id="carrossel" aria-roledescription="carrossel" aria-label="Telas do LIGHT">
+        <div class="car-trilho" id="carTrilho">
+          <figure><img src="telas/01_login.webp" alt="Tela de login do LIGHT" width="1280" height="797" loading="lazy"><figcaption><b>1</b>Tela de login simples</figcaption></figure>
+          <figure><img src="telas/02_interface.webp" alt="Interface principal do LIGHT" width="1280" height="794" loading="lazy"><figcaption><b>2</b>Interface limpa</figcaption></figure>
+          <figure><img src="telas/03_videoaulas.webp" alt="Videoaulas curtas" width="1280" height="796" loading="lazy"><figcaption><b>3</b>Videoaulas curtas</figcaption></figure>
+          <figure><img src="telas/05_automacoes.webp" alt="Manual de automação" width="1280" height="798" loading="lazy"><figcaption><b>4</b>Painel rápido de automações</figcaption></figure>
+          <figure><img src="telas/06_duvidas_ma2.webp" alt="Modo Conversa" width="1280" height="795" loading="lazy"><figcaption><b>5</b>Área de dúvidas sobre sintaxe da MA2</figcaption></figure>
+          <figure><img src="telas/07_agenda.webp" alt="Agenda de trabalhos" width="1280" height="795" loading="lazy"><figcaption><b>6</b>Controle de agenda de trabalho</figcaption></figure>
+        </div>
+        <button type="button" class="car-seta esq" data-car="-1" aria-label="Tela anterior">‹</button>
+        <button type="button" class="car-seta dir" data-car="1" aria-label="Próxima tela">›</button>
+        <div class="car-pontos" id="carPontos"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= PLANOS ======================= -->
+  <section id="planos">
+    <div class="miolo centro">
+      <div class="surge">
+        <div class="rotulo">Planos</div>
+        <h2>Comece grátis. Libere tudo quando quiser.</h2>
+        <p class="lead">O Gratuito resolve o dia a dia. O Full tira todos os limites.</p>
+        <div class="ciclo" role="group" aria-label="Ciclo de pagamento">
+          <button type="button" data-ciclo="mensal">Mensal</button>
+          <button type="button" data-ciclo="anual" class="ativo">Anual <em>−16%</em></button>
+        </div>
+      </div>
+      <div class="planos">
+        <div class="plano surge">
+          <h3>Gratuito</h3>
+          <p class="desc">Para conhecer e usar no dia a dia.</p>
+          <div class="preco"><b>R$ 0</b><span>para sempre</span></div>
+          <div class="preco-nota">&nbsp;</div>
+          <ul>
+            <li>Busca de fixtures por canais DMX ilimitada</li>
+            <li>Conexão com a grandMA2 e comandos simples</li>
+            <li class="lim">2 automações por dia</li>
+            <li class="lim">1 download de fixture por dia</li>
+            <li class="lim">5 respostas da IA por dia no Modo Conversa</li>
+            <li class="lim">Financeiro com 1 empresa · 3 anotações/dia no WhatsApp</li>
+            <li class="lim">2 videoaulas por dia, com comercial</li>
+            <li class="lim">1 dispositivo</li>
+          </ul>
+          <a href="#baixar" class="btn btn-linha" data-baixar>Baixar grátis</a>
+        </div>
+        <div class="plano full surge">
+          <span class="destaque">MAIS COMPLETO</span>
+          <h3>Full</h3>
+          <p class="desc">Para quem vive de luz.</p>
+          <div class="preco"><b id="precoValor">R$ 116,90</b><span>/mês</span></div>
+          <div class="preco-nota" id="precoNota">no plano anual (R$ 1.402,80 por ano)</div>
+          <ul>
+            <li>Automações ilimitadas, inclusive em lote</li>
+            <li>Downloads de fixtures ilimitados</li>
+            <li>Modo Operação para o show ao vivo</li>
+            <li>Modo Conversa com IA na nuvem (60 respostas/dia)</li>
+            <li>Financeiro completo + WhatsApp sem limite</li>
+            <li>Todas as videoaulas, sem comercial</li>
+            <li>Até 3 dispositivos (casa, notebook, empresa)</li>
+            <li>Suporte prioritário</li>
+          </ul>
+          <a href="#baixar" class="btn btn-ambar" data-baixar>Baixar e assinar o Full</a>
+        </div>
+      </div>
+      <p class="pagamento">A assinatura é feita dentro do LIGHT, com pagamento seguro pelo Asaas. Cancele quando quiser, pelo próprio app.</p>
+    </div>
+  </section>
+
+  <!-- ======================= CRIADOR ======================= -->
+  <section style="padding-top:20px">
+    <div class="miolo">
+      <div class="criador surge">
+        <div class="foto">CR</div>
+        <div>
+          <blockquote>"Faz uns 20 anos que eu ilumino evento — corporativo, social, show. O LIGHT nasceu do que eu queria ter na mesa: menos tempo digitando, mais tempo criando."</blockquote>
+          <cite><b>César Reis</b> · iluminador e criador do LIGHT</cite>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= FAQ ======================= -->
+  <section id="faq">
+    <div class="miolo centro">
+      <div class="surge">
+        <div class="rotulo">Dúvidas</div>
+        <h2>Perguntas frequentes</h2>
+      </div>
+      <div class="faq" style="text-align:left">
+        <details class="surge"><summary>Funciona com qual mesa?</summary><p>grandMA2 — onPC e console, conectados na mesma rede do computador. O LIGHT é validado na grandMA2 onPC 3.9.60.45 e avisa se a sua versão for diferente. A grandMA3 está nos planos para o futuro.</p></details>
+        <details class="surge"><summary>Roda em Mac?</summary><p>Por enquanto, só Windows.</p></details>
+        <details class="surge"><summary>Precisa de internet?</summary><p>Para criar a conta, entrar e usar a IA na nuvem, sim. A conexão com a mesa é pela rede local.</p></details>
+        <details class="surge"><summary>O LIGHT pode estragar meu show file?</summary><p>Ações perigosas — apagar show, resetar, sobrescrever cue existente — ficam travadas e nunca são feitas sem você. Mesmo assim, salve seu show antes de começar, como em qualquer ferramenta.</p></details>
+        <details class="surge"><summary>Como assino e como cancelo o Full?</summary><p>Tudo dentro do LIGHT, na sua conta. Pagamento pelo Asaas. Para cancelar, é no próprio app, quando quiser.</p></details>
+        <details class="surge"><summary>O plano Gratuito tem prazo?</summary><p>Não. É gratuito para sempre, com limites diários que renovam toda meia-noite.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= FINAL ======================= -->
+  <section class="final" id="baixar">
+    <div class="miolo surge">
+      <h2>Bora para a mesa?</h2>
+      <p class="lead" style="margin:0 auto 28px">Baixe o LIGHT, crie sua conta grátis e sinta a diferença no próximo show-prep.</p>
+      <a href="#baixar" class="btn btn-ambar" data-baixar>⬇ Baixar o LIGHT para Windows</a>
+      <p class="nota" id="notaDownload">Windows 10 ou 11</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="miolo">
+    <div><b class="marca" style="font-size:13px">LIGHT <span>ASSISTENTE</span></b><br>Feito por iluminador, para iluminador.</div>
+    <div class="redes" id="redes"></div>
+    <div class="aviso-marca">grandMA2 é marca registrada da MA Lighting. O LIGHT Assistente é um produto independente, sem vínculo com a MA Lighting.</div>
+  </div>
+</footer>
+
+<script>
+/* ===== CONFIGURAÇÃO — o dono preenche aqui ===== */
+var CONFIG = {
+  download: "",            // link do instalador (GitHub Releases). Vazio = "em breve"
+  video: "",               // link do YouTube (ex.: https://www.youtube.com/watch?v=XXXX)
+  instagram: "",           // https://instagram.com/...
+  tiktok: "",              // https://tiktok.com/@...
+  whatsapp: ""             // https://wa.me/55...
+};
+
+(function () {
+  "use strict";
+
+  // ---- download ----
+  document.querySelectorAll("[data-baixar]").forEach(function (a) {
+    if (CONFIG.download) { a.href = CONFIG.download; a.removeAttribute("data-baixar"); }
+  });
+  if (!CONFIG.download) {
+    var nd = document.getElementById("notaDownload");
+    if (nd) nd.textContent = "Download liberado em breve · siga no Instagram para saber primeiro";
+  }
+
+  // ---- vídeo do YouTube ----
+  var m = String(CONFIG.video).match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/);
+  if (m) {
+    var v = document.getElementById("video");
+    v.hidden = false;
+    v.innerHTML =
+      '<iframe src="https://www.youtube-nocookie.com/embed/' + m[1] + '" title="Apresentação do LIGHT" ' +
+      'allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>';
+  }
+
+  // ---- redes ----
+  var redes = [["Instagram", CONFIG.instagram], ["TikTok", CONFIG.tiktok], ["WhatsApp", CONFIG.whatsapp]];
+  document.getElementById("redes").innerHTML = redes.filter(function (r) { return r[1]; })
+    .map(function (r) { return '<a href="' + r[1] + '" target="_blank" rel="noopener">' + r[0] + "</a>"; }).join("");
+
+  // ---- mensal / anual ----
+  var PRECOS = {
+    mensal: ["R$ 139,90", "cobrado todo mês · cancele quando quiser"],
+    anual: ["R$ 116,90", "no plano anual (R$ 1.402,80 por ano)"]
+  };
+  document.querySelectorAll("[data-ciclo]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll("[data-ciclo]").forEach(function (x) { x.classList.toggle("ativo", x === b); });
+      document.getElementById("precoValor").textContent = PRECOS[b.dataset.ciclo][0];
+      document.getElementById("precoNota").textContent = PRECOS[b.dataset.ciclo][1];
+    });
+  });
+
+  // ---- entrada suave ao rolar ----
+  var obs = "IntersectionObserver" in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("visto"); obs.unobserve(e.target); } });
+  }, { threshold: .12 }) : null;
+  document.querySelectorAll(".surge").forEach(function (el) { obs ? obs.observe(el) : el.classList.add("visto"); });
+
+  // ---- chaves Construção / Operação alternando ----
+  var cC = document.getElementById("chC"), cO = document.getElementById("chO");
+  setInterval(function () { cC.classList.toggle("on"); cO.classList.toggle("on"); }, 3200);
+
+  // ---- demonstração (conversa animada) ----
+  var calmo = false;   // digitação não é movimento de tela: roda sempre
+  var CENAS = [
+    { fala: "cria presets de dimmer de 0 até 100 de 10 em 10 no grupo 1",
+      plano: "Vou gravar 11 presets de dimmer (0%, 10%, 20% … 100%) no pool 1, para o grupo 1.",
+      itens: ["Seleciono o grupo 1", "Gravo cada valor num preset", "Dou nome a cada preset"] },
+    { fala: "acha uma fixture com dimmer, shutter, pan, tilt, color e gobo",
+      plano: "Encontrei aparelhos com essa sequência de canais na biblioteca.",
+      itens: ["Mostro os modelos e modos que batem", "Você escolhe e baixa o arquivo", "Leva no pendrive para a mesa"] },
+    { fala: "grava cue 2 no executor 1.1 com fade de 3 segundos",
+      plano: "Vou gravar a cue 2 no executor 1.1 da página 1, com fade de 3 s.",
+      itens: ["Confiro se a cue 2 já existe (não sobrescrevo sem você)", "Gravo a cue", "Aplico o fade de 3 s"] }
+  ];
+  var caixa = document.getElementById("demo"), n = 0;
+  function esc(s) { return s.replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
+  function digitar(el, texto, fim) {
+    if (calmo) { el.textContent = texto; el.classList.remove("digitando"); return fim(); }
+    var i = 0;
+    (function passo() {
+      el.textContent = texto.slice(0, ++i);
+      if (i < texto.length) setTimeout(passo, 28 + Math.random() * 30); else { el.classList.remove("digitando"); fim(); }
+    })();
+  }
+  function cena() {
+    var c = CENAS[n++ % CENAS.length];
+    caixa.innerHTML = '<div class="fala digitando"></div>';
+    digitar(caixa.firstChild, c.fala, function () {
+      setTimeout(function () {
+        var r = document.createElement("div");
+        r.className = "resposta";
+        r.innerHTML = '<div class="rot">LIGHT · MODO CONSTRUÇÃO</div>' + esc(c.plano) +
+          "<ul>" + c.itens.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" +
+          '<div class="ok"><span>Executar</span><span class="n">Ajustar</span></div>';
+        caixa.appendChild(r);
+        setTimeout(cena, calmo ? 9000 : 5200);
+      }, calmo ? 0 : 500);
+    });
+  }
+  cena();
+})();
+
+/* =========================================================
+   LOGO EM CÓDIGO — "LIGHT" em pixels de LED + partículas
+   (os pixels chegam voando e se encaixam; depois as partículas
+   flutuam devagar, sem estrobo). Leve: a grade é desenhada 1 vez.
+   ========================================================= */
+(function () {
+  "use strict";
+  var cv = document.getElementById("logoLed");
+  if (!cv || !cv.getContext) return;
+  var calmo = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var W = 900, H = 330, dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  var ctx = cv.getContext("2d");
+  ctx.scale(dpr, dpr);
+
+  var CEL = 11;                       // tamanho de cada "LED"
+  var celulas = [], particulas = [], grade = null, inicio = 0;
+
+  function montarGrade() {
+    var off = document.createElement("canvas");
+    off.width = W; off.height = H;
+    var o = off.getContext("2d");
+    o.fillStyle = "#fff";
+    o.textAlign = "center"; o.textBaseline = "middle";
+    o.font = "800 250px Inter, 'Segoe UI', Arial, sans-serif";
+    o.fillText("LIGHT", W / 2, H / 2 + 8);
+    var px = o.getImageData(0, 0, W, H).data;
+    for (var y = 0; y < H; y += CEL) {
+      for (var x = 0; x < W; x += CEL) {
+        var cx = Math.min(W - 1, x + CEL / 2 | 0), cy = Math.min(H - 1, y + CEL / 2 | 0);
+        if (px[(cy * W + cx) * 4 + 3] > 120) {
+          var ang = Math.random() * Math.PI * 2, dist = 260 + Math.random() * 420;
+          celulas.push({ x: x, y: y, sx: W / 2 + Math.cos(ang) * dist, sy: H / 2 + Math.sin(ang) * dist,
+                         atraso: Math.random() * 500, brilho: .82 + Math.random() * .18 });
+        }
+      }
+    }
+    // grade pronta (desenhada uma vez, com brilho)
+    grade = document.createElement("canvas");
+    grade.width = W * dpr; grade.height = H * dpr;
+    var g = grade.getContext("2d");
+    g.scale(dpr, dpr);
+    g.shadowColor = "rgba(150, 210, 255, .55)"; g.shadowBlur = 14;
+    celulas.forEach(function (c) { led(g, c.x, c.y, c.brilho); });
+    // partículas: quadradinhos ao redor, saindo do centro
+    for (var i = 0; i < 140; i++) particulas.push(novaParticula(true));
+  }
+
+  function led(g, x, y, b) {
+    var s = CEL - 2;
+    g.fillStyle = "rgba(" + (200 + 40 * b | 0) + "," + (225 + 25 * b | 0) + ",255," + (0.55 + 0.45 * b) + ")";
+    g.fillRect(x + 1, y + 1, s, s);
+    g.fillStyle = "rgba(255,255,255," + (0.35 * b) + ")";
+    g.fillRect(x + 2, y + 2, s - 4, 2);
+  }
+
+  // efeito de dimmer como na MA: curva seno, 2 wings, phase 0 thru -360
+  // (o meio puxa e a onda corre para as duas pontas); 20% a 100%, 3,6 s por ciclo
+  var PERIODO = calmo ? 6000 : 3600, MINIMO = 0.2;
+  function intensidade(x, t, entra) {
+    var d = Math.abs(x + CEL / 2 - W / 2) / (W / 2);          // 0 no meio, 1 nas pontas (espelhado)
+    var onda = 0.5 + 0.5 * Math.sin((t / PERIODO) * Math.PI * 2 - d * Math.PI * 2);
+    var nivel = MINIMO + (1 - MINIMO) * onda;
+    return 1 - entra * (1 - nivel);
+  }
+
+  function novaParticula(espalhar) {
+    var ang = Math.random() * Math.PI * 2;
+    var r = espalhar ? 60 + Math.random() * 360 : 80 + Math.random() * 60;
+    return { x: W / 2 + Math.cos(ang) * r * 1.4, y: H / 2 + Math.sin(ang) * r * .6, ang: ang,
+             v: .08 + Math.random() * .25, t: Math.random() * 6.28, tam: 1.5 + Math.random() * 3.5,
+             vida: 0, max: 400 + Math.random() * 600 };
+  }
+
+  function quadro(agora) {
+    if (!inicio) inicio = agora;
+    var t = agora - inicio;
+    ctx.clearRect(0, 0, W, H);
+    var montando = t < 1900 && !calmo;          // reduzido: sem voo de entrada
+    if (montando) {
+      ctx.shadowColor = "rgba(150, 210, 255, .5)"; ctx.shadowBlur = 8;
+      celulas.forEach(function (c) {
+        var k = Math.max(0, Math.min(1, (t - c.atraso) / 1300));
+        var e = 1 - Math.pow(1 - k, 3);
+        led(ctx, c.sx + (c.x - c.sx) * e, c.sy + (c.y - c.sy) * e, c.brilho * (0.3 + 0.7 * e));
+      });
+      ctx.shadowBlur = 0;
+    } else {
+      // efeito de DIMMER (ver intensidade): 2 wings, do meio para as pontas;
+      // entra suave depois da montagem (fade de 1,2 s)
+      var entra = calmo ? 1 : Math.min(1, (t - 1900) / 1200);
+      var faixas = Math.ceil(W / CEL);
+      for (var f = 0; f < faixas; f++) {               // brilho (glow) por coluna
+        ctx.globalAlpha = intensidade(f * CEL, t, entra);
+        ctx.drawImage(grade, f * CEL * dpr, 0, CEL * dpr, H * dpr, f * CEL, 0, CEL, H);
+      }
+      ctx.globalAlpha = 1;
+      celulas.forEach(function (c) { led(ctx, c.x, c.y, c.brilho * intensidade(c.x, t, entra)); });
+    }
+    // partículas flutuando (cintilação lenta)
+    particulas.forEach(function (p, i) {
+      p.vida++; p.t += .02;
+      p.x += Math.cos(p.ang) * p.v; p.y += Math.sin(p.ang) * p.v * .6 - .04;
+      var a = Math.min(1, p.vida / 60, (p.max - p.vida) / 60) * (.35 + .35 * Math.sin(p.t));
+      if (p.vida > p.max || p.x < -10 || p.x > W + 10 || p.y < -10 || p.y > H + 10) { particulas[i] = novaParticula(false); return; }
+      ctx.fillStyle = "rgba(220,240,255," + Math.max(0, a) + ")";
+      ctx.fillRect(p.x, p.y, p.tam, p.tam);
+    });
+    if (!document.hidden) requestAnimationFrame(quadro);
+  }
+
+  function comecar() {
+    montarGrade();
+    requestAnimationFrame(quadro);
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) requestAnimationFrame(quadro); });
+  }
+  (document.fonts && document.fonts.load ? document.fonts.load("800 250px Inter") : Promise.resolve())
+    .then(comecar, comecar);
+})();
+
+/* =========================================================
+   SIMULADOR — situações reais do LIGHT com respostas fixas.
+   Conversa: saída real do Modo Conversa (receitas validadas
+   na grandMA2 onPC 3.9.60.45). Busca: resultados reais da
+   biblioteca do LIGHT. Financeiro: campos reais do app.
+   ========================================================= */
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var tela = $("simTela"), opcoes = $("simOpcoes");
+  var calmo = false;   // digitação não é movimento de tela: roda sempre
+  var vez = 0;                                   // cancela a animação anterior ao trocar
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function espera(ms, id) { return new Promise(function (ok, nao) { setTimeout(function () { id === vez ? ok() : nao("parou"); }, calmo ? 0 : ms); }); }
+  function el(html) { var d = document.createElement("div"); d.innerHTML = html.trim(); return d.firstChild; }
+  function rolar() { tela.scrollTop = tela.scrollHeight; }
+  function digitar(alvo, texto, id, vel) {
+    if (calmo) { alvo.textContent = texto; return Promise.resolve(); }
+    var i = 0;
+    return new Promise(function (ok, nao) {
+      (function passo() {
+        if (id !== vez) return nao("parou");
+        alvo.textContent = texto.slice(0, ++i);
+        if (i < texto.length) setTimeout(passo, (vel || 26) + Math.random() * 25); else ok();
+      })();
+    });
+  }
+  function toast(msg) {
+    var t = tela.querySelector(".sim-toast") || tela.appendChild(el('<div class="sim-toast"></div>'));
+    t.textContent = msg; t.classList.add("vis");
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("vis"); }, 3200);
+  }
+
+  // ---------------- 1. MODO CONVERSA ----------------
+  var CONVERSA = {
+    A: { rotulo: "Como colocar um executor em modo Temp?",
+         passos: [["eu", "como colocar o executor 1.5 em modo temp"]],
+         texto: "Beleza, César. Cada botão do executor pode ter uma função. Flash acende enquanto segura; Swop acende e apaga o resto; Toggle liga e desliga a cada toque; Temp liga só enquanto segura, respeitando o fade. Escolha o executor. Atribua a função ao botão com Assign.",
+         cmds: ["Assign Temp At Executor 1.5"],
+         dica: "Para fumaça, Temp é o mais seguro: só sai enquanto você segura." },
+    B: { rotulo: "Como colocar fade de 4 segundos na cue 3 do executor 1.2?",
+         passos: [["eu", "como colocar fade de 4 segundos na cue 3 do executor 1.2"],
+                  ["light", "Da cue..."], ["eu", "3"], ["light", "até a cue..."], ["eu", "3"]],
+         texto: "Beleza, César. Em vez de abrir cue por cue, o Assign Time aplica o mesmo tempo numa faixa de cues do executor. Vale para a cue inteira; para um atributo só, use a receita de fade por atributo. Primeiro, confira o executor e a faixa de cues. Depois, aplique o tempo na faixa com Assign Time.",
+         cmds: ["Assign Time 4 At Executor 1.2 Cue 3 Thru 3 /m"],
+         dica: "Sem o número final (Cue 1 Thru) vale da cue 1 até a última." }
+  };
+  function rodarConversa(k, id) {
+    var c = CONVERSA[k];
+    tela.innerHTML = '<div class="cv"></div><div class="cv-entrada"><div>Na demonstração, escolha uma pergunta acima</div><span>➤</span></div>';
+    var cv = tela.querySelector(".cv");
+    var cadeia = Promise.resolve();
+    c.passos.forEach(function (p) {
+      cadeia = cadeia.then(function () {
+        if (p[0] === "eu") {
+          var b = cv.appendChild(el('<div class="fala digitando"></div>'));
+          rolar();
+          return digitar(b, p[1], id).then(function () { b.classList.remove("digitando"); return espera(450, id); });
+        }
+        var pz = cv.appendChild(el('<div class="pensando"><i></i><i></i><i></i></div>')); rolar();
+        return espera(700, id).then(function () {
+          pz.remove();
+          cv.appendChild(el('<div class="resposta"><div class="rot">LIGHT</div><p>' + esc(p[1]) + "</p></div>")); rolar();
+          return espera(650, id);
+        });
+      });
+    });
+    return cadeia.then(function () {
+      var pz = cv.appendChild(el('<div class="pensando"><i></i><i></i><i></i></div>')); rolar();
+      return espera(1100, id).then(function () {
+        pz.remove();
+        cv.appendChild(el('<div class="resposta"><div class="rot">LIGHT · RESPOSTA</div><p>' + esc(c.texto) + "</p>" +
+          '<div class="cmd"><div class="t">COMANDOS PARA A grandMA2 <span>✓ validado na onPC 3.9.60.45</span></div>' +
+          c.cmds.map(function (x) { return "<code>" + esc(x) + "</code>"; }).join("") + "</div>" +
+          '<div class="dica"><b>Dica:</b> ' + esc(c.dica) + "</div>" +
+          '<div class="perg-final">Quer ver os comandos na tela ou que eu faça direto na MA?</div>' +
+          '<div class="cv-botoes"><button type="button" data-t="Comandos na tela: é só digitar na linha de comando da mesa.">📋 Ver na tela</button>' +
+          '<button type="button" class="p" data-t="No LIGHT instalado, ele envia direto para a sua grandMA2 pela rede.">▶ Fazer direto na MA</button></div></div>'));
+        rolar();
+      });
+    });
+  }
+
+  // ---------------- 2. PROCURAR PERSONALIDADE ----------------
+  var BUSCA = {
+    A: { rotulo: "Strobo RGB fita", termo: "strobo fita",
+         res: [
+           { nome: "STROBO FITA DE LED", fab: "LOCA LUZ", modo: "11 CHANNEL", ch: 11,
+             mapa: [["DIM", "dimmer"], ["SHUTTER", "strobo"], ["COLOR1", "macro de cor"], ["V_VSPEED", "velocidade"],
+                    ["COLORRGB1", "vermelho"], ["COLORRGB2", "verde"], ["COLORRGB3", "azul"], ["EFFECTWHEEL", "efeito"],
+                    ["COLORMIXER", "mix de cor"], ["STROBE_RATIO", "duração do flash"], ["DUMMY", "sem uso"]] },
+           { nome: "STROBO FITA ADL", fab: "ADL", modo: "40CH", ch: 40,
+             mapa: [["DIM", "dimmer"], ["SHUTTER", "strobo"], ["EFFECTINDEXROTATE", "velocidade efeito"],
+                    ["EFFECTINDEXROTATE2", "velocidade efeito 2"], ["EFFECT", "efeito"], ["EFFECT2", "efeito 2"],
+                    ["COLORMIXMODE", "modo de cor"], ["COLORMIXPOSITION", "posição da cor"], ["…", "+ pixels RGB"]] }
+         ] },
+    B: { rotulo: "BSW 200", termo: "bsw 200",
+         res: [
+           { nome: "200W LED BSW 3-in-1", fab: "Vangaa", modo: "18 channel", ch: 18 },
+           { nome: "200W LED BSW 3 in 1", fab: "Mifi River", modo: "00", ch: 18 }
+         ] }
+  };
+  // canal da posição no arquivo da personalidade (PAN/TILT em 16 bit ocupam 2 canais)
+  var MAPA_BSW = [["PAN", "16 bit", "1-2"], ["TILT", "16 bit", "3-4"], ["POSITIONMSPEED", "velocidade P/T"], ["DIM", "dimmer"],
+                  ["SHUTTER", "strobo"], ["COLOR1", "roda de cor"], ["GOBO1", "gobo fixo"], ["GOBO2", "gobo rotativo"],
+                  ["GOBO2_POS", "giro do gobo"], ["EFFECTWHEEL", "prisma"], ["EFFECTINDEXROTATE", "giro do prisma"],
+                  ["FROST", "frost"], ["FOCUS", "foco"], ["ZOOM", "zoom"], ["MODE", "modo"], ["FIXTUREGLOBALRESET", "reset"]];
+  BUSCA.B.res.forEach(function (r) { r.mapa = MAPA_BSW; });
+
+  function itemBusca(r, i) {
+    var canal = 0;
+    var g = r.mapa.map(function (m) {
+      var pos;
+      if (m[0] === "…") pos = "…";
+      else if (m[2]) { pos = m[2]; canal = Number(m[2].split("-").pop()); }
+      else pos = String(++canal);
+      return "<div><b>" + esc(pos) + "</b>" + esc(m[0]) + "<small>" + esc(m[1]) + "</small></div>";
+    }).join("");
+    return '<div class="bx-item" data-i="' + i + '"><div class="l1"><div><div class="nome">' + esc(r.nome) + '</div><div class="fab">' +
+      esc(r.fab) + " · modo " + esc(r.modo) + '</div></div><span class="ch">' + r.ch + " canais</span></div>" +
+      '<div class="bx-mapa"><div class="g">' + g + '</div><div class="acoes-bx cv-botoes">' +
+      '<button type="button" class="p" data-t="Arquivo pronto! No LIGHT instalado, ele vai para a pasta do pendrive da mesa.">⬇ Baixar para o pendrive</button>' +
+      '<button type="button" data-t="No LIGHT você também acha pela ordem dos canais, sem saber o modelo.">🔢 Buscar pelos canais</button></div></div></div>';
+  }
+
+  function rodarBusca(k, id) {
+    var b = BUSCA[k];
+    tela.innerHTML = '<div class="bx-campo"><div class="bx-modo"><span class="on">Por nome</span><span>Por canais</span></div>' +
+      '<div class="bx-input"></div><div class="bx-btn">Buscar</div></div><div class="bx-info"></div><div class="bx-res"></div>';
+    return digitar(tela.querySelector(".bx-input"), b.termo, id, 60).then(function () { return espera(350, id); }).then(function () {
+      tela.querySelector(".bx-info").textContent = "Procurando na biblioteca de +29 mil personalidades…";
+      return espera(900, id);
+    }).then(function () {
+      tela.querySelector(".bx-info").textContent = "Melhores resultados — toque para ver o mapa de canais:";
+      var lista = tela.querySelector(".bx-res");
+      lista.innerHTML = b.res.map(itemBusca).join("");
+      return espera(900, id);
+    }).then(function () {
+      var primeiro = tela.querySelector(".bx-item");
+      if (primeiro) primeiro.classList.add("aberto");
+    });
+  }
+
+  // ---------------- 3. FINANCEIRO ----------------
+  var MENU = ["Cadastro", "Empresas", "Trabalhos", "Custos Fixos", "Conquistas", "Dízimo e Ofertas", "Planejamento", "Alertas"];
+  function casca(ativo, titulo, botao) {
+    return '<div class="fn"><div class="fn-menu">' + MENU.map(function (m) { return "<div" + (m === ativo ? ' class="on"' : "") + ">" + m + "</div>"; }).join("") +
+      '</div><div><div class="fn-topo"><h4>' + titulo + "</h4>" + (botao ? "<span>" + botao + "</span>" : "") + '</div><div class="fn-area"></div></div></div>';
+  }
+  function preencher(campos, id) {
+    var cadeia = Promise.resolve();
+    campos.forEach(function (c) {
+      cadeia = cadeia.then(function () {
+        var d = tela.querySelector('[data-c="' + c[0] + '"]');
+        d.classList.add("foco");
+        return digitar(d, c[1], id, 22).then(function () { d.classList.remove("foco"); return espera(150, id); });
+      });
+    });
+    return cadeia;
+  }
+  function campo(id, rot) { return '<div class="fn-campo"><label>' + rot + '</label><div data-c="' + id + '"></div></div>'; }
+
+  var FIN = {
+    A: { rotulo: "Cadastrando 1 empresa", rodar: function (id) {
+      tela.innerHTML = casca("Empresas", "Empresas", "+ Nova Empresa");
+      var area = tela.querySelector(".fn-area");
+      area.innerHTML = '<div class="fn-form"><div class="t">Nova Empresa</div>' + campo("nome", "Nome da Empresa") +
+        '<div class="fn-lin">' + campo("contato", "Pessoa de Contato") + campo("tel", "Telefone") + "</div>" +
+        campo("pgto", "Forma de Pagamento") + campo("he", "Regra de Hora Extra / Virada") +
+        campo("nota", "Avaliação Rápida") + '<div class="fn-salvar">Salvar</div></div>';
+      return preencher([["nome", "Produtora Exemplo Eventos"], ["contato", "Ana"], ["tel", "(11) 90000-0000"],
+                        ["pgto", "1 dia após o término do evento"], ["he", "Valor dobrado após 12h de trabalho"], ["nota", "★★★★☆"]], id)
+        .then(function () { return espera(500, id); }).then(function () {
+          area.innerHTML = '<table class="fn-tab"><tr><th>Empresa</th><th>Contato</th><th>Pagamento</th></tr>' +
+            '<tr class="novo"><td><b>Produtora Exemplo Eventos</b></td><td>Ana</td><td>1 dia após o término…</td></tr></table>';
+          toast("Empresa salva. Agora é só lançar os trabalhos dela.");
+        });
+    } },
+    B: { rotulo: "Cadastrando 1 custo fixo", rodar: function (id) {
+      tela.innerHTML = casca("Custos Fixos", "Custos Fixos", "+ Novo Custo Fixo");
+      var area = tela.querySelector(".fn-area");
+      area.innerHTML = '<div class="fn-form"><div class="t">Novo Custo Fixo</div>' + campo("desc", "Descrição") +
+        '<div class="fn-lin">' + campo("cat", "Categoria") + campo("valor", "Valor (R$)") + "</div>" +
+        '<div class="fn-lin">' + campo("dia", "Dia de Vencimento") + campo("rec", "Recorrência") + "</div>" +
+        '<div class="fn-salvar">Salvar</div></div>';
+      return preencher([["desc", "MEI (DAS)"], ["cat", "Impostos/Taxas"], ["valor", "75,90"], ["dia", "20"], ["rec", "☑ Mensal (repete todo mês)"]], id)
+        .then(function () { return espera(500, id); }).then(function () {
+          area.innerHTML = '<table class="fn-tab"><tr><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Vence</th></tr>' +
+            '<tr class="novo"><td><b>MEI (DAS)</b></td><td>Impostos/Taxas</td><td>R$ 75,90</td><td>dia 20</td></tr></table>';
+          toast("Custo fixo salvo: ele repete sozinho todo mês.");
+        });
+    } },
+    C: { rotulo: "Vendo o resumo do mês", rodar: function (id) {
+      tela.innerHTML = casca("Planejamento", "📊 Resumo Geral do Mês", "");
+      var area = tela.querySelector(".fn-area");
+      area.innerHTML = '<div class="fn-res"></div>';
+      var res = area.firstChild;
+      var ITENS = [["1. Ganho real", 8400, "ganho"], ["2. Custos fixos", 1950], ["3. Conquistas", 300], ["4. Dízimo e oferta", 840],
+                   ["5. Reserva de emergência", 600], ["6. Metas pro futuro", 400], ["7. Lazer em família", 350]];
+      function brl(v) { return "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2 }); }
+      var cadeia = Promise.resolve();
+      ITENS.forEach(function (it) {
+        cadeia = cadeia.then(function () {
+          res.appendChild(el('<div class="it ' + (it[2] || "") + '"><span>' + it[0] + "</span><b>" + brl(it[1]) + "</b></div>"));
+          rolar();
+          return espera(260, id);
+        });
+      });
+      return cadeia.then(function () {
+        var comp = ITENS.slice(1).reduce(function (s, x) { return s + x[1]; }, 0);
+        res.appendChild(el('<div class="total"><small>Resumo total do mês — ganho ' + brl(8400) + " − compromissos " + brl(comp) +
+          "</small><div>Sobra livre: " + brl(8400 - comp) + "</div><p>No azul! Glória a Deus — e parabéns pela organização.</p></div>"));
+        rolar();
+      });
+    } }
+  };
+
+  // ---------------- abas e opções ----------------
+  var ABAS = {
+    conversa: { titulo: "LIGHT · Modo Conversa", q: "Escolha uma pergunta:", itens: CONVERSA, rodar: rodarConversa,
+                vazio: ["💬", "Escolha uma pergunta acima e veja o LIGHT responder."],
+                nota: "Respostas reais do Modo Conversa. Os comandos são gerados por receitas testadas na grandMA2 onPC 3.9.60.45 — nunca inventados pela IA." },
+    busca: { titulo: "LIGHT · Procurar personalidade", q: "Escolha um aparelho:", itens: BUSCA, rodar: rodarBusca,
+             vazio: ["🔎", "Escolha um aparelho acima e veja a busca na biblioteca."],
+             nota: "Resultados reais da biblioteca do LIGHT. No app você também busca pela sequência de canais DMX." },
+    fin: { titulo: "LIGHT · Financeiro", q: "Escolha uma situação:", itens: FIN,
+           rodar: function (k, id) { return FIN[k].rodar(id); },
+           vazio: ["💰", "Escolha uma situação acima e veja o financeiro do iluminador."],
+           nota: "Telas e campos do financeiro do LIGHT. Valores de exemplo." }
+  };
+  var abaAtual = "conversa";
+
+  function abrirAba(nome, auto) {
+    abaAtual = nome; vez++;
+    var a = ABAS[nome];
+    document.querySelectorAll("[data-sim]").forEach(function (b) { b.classList.toggle("ativo", b.dataset.sim === nome); });
+    $("simTitulo").textContent = a.titulo;
+    $("simNota").textContent = a.nota;
+    opcoes.innerHTML = '<div class="q">' + a.q + "</div>" + Object.keys(a.itens).map(function (k) {
+      return '<button type="button" data-op="' + k + '"><i>' + k + "</i>" + esc(a.itens[k].rotulo) + "</button>";
+    }).join("");
+    tela.innerHTML = '<div class="sim-vazio"><div><b>' + a.vazio[0] + "</b>" + a.vazio[1] + "</div></div>";
+    if (auto) rodar("A");
+  }
+
+  function rodar(k) {
+    var id = ++vez;
+    opcoes.querySelectorAll("[data-op]").forEach(function (b) { b.classList.toggle("ativo", b.dataset.op === k); });
+    tela.scrollTop = 0;
+    Promise.resolve(ABAS[abaAtual].rodar(k, id)).catch(function () { /* trocou no meio: tudo bem */ });
+  }
+
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-sim]");
+    if (b) return abrirAba(b.dataset.sim, false);
+    var o = ev.target.closest("[data-op]");
+    if (o) return rodar(o.dataset.op);
+    var it = ev.target.closest(".bx-item");
+    var t = ev.target.closest("[data-t]");
+    if (t) return toast(t.dataset.t);
+    if (it) it.classList.toggle("aberto");
+  });
+
+  abrirAba("conversa", false);
+  // começa sozinho quando a pessoa chega no simulador (uma vez)
+  if ("IntersectionObserver" in window) {
+    var jaRodou = false;
+    new IntersectionObserver(function (es, ob) {
+      if (es[0].isIntersecting && !jaRodou) { jaRodou = true; ob.disconnect(); if (abaAtual === "conversa") rodar("A"); }
+    }, { threshold: .4 }).observe(tela);
+  }
+})();
+
+/* =========================================================
+   CARROSSEL — telas reais do LIGHT em loop (4,5 s cada),
+   pausa com o mouse em cima, setas, pontos e arrastar no celular
+   ========================================================= */
+(function () {
+  "use strict";
+  var caixa = document.getElementById("carrossel"), trilho = document.getElementById("carTrilho");
+  if (!caixa || !trilho) return;
+  var total = trilho.children.length, atual = 0, timer = null, pausado = false;
+  var pontos = document.getElementById("carPontos");
+  for (var i = 0; i < total; i++) {
+    var b = document.createElement("button");
+    b.type = "button"; b.dataset.ir = i; b.setAttribute("aria-label", "Tela " + (i + 1));
+    pontos.appendChild(b);
+  }
+  function ir(n) {
+    atual = (n + total) % total;
+    trilho.style.transform = "translateX(" + (-100 * atual) + "%)";
+    pontos.querySelectorAll("button").forEach(function (b, k) { b.classList.toggle("on", k === atual); });
+  }
+  function tocar() {
+    clearInterval(timer);
+    timer = setInterval(function () { if (!pausado && !document.hidden) ir(atual + 1); }, 4500);
+  }
+  caixa.addEventListener("click", function (ev) {
+    var s = ev.target.closest("[data-car]"), p = ev.target.closest("[data-ir]");
+    if (s) { ir(atual + Number(s.dataset.car)); tocar(); }
+    if (p) { ir(Number(p.dataset.ir)); tocar(); }
+  });
+  caixa.addEventListener("mouseenter", function () { pausado = true; });
+  caixa.addEventListener("mouseleave", function () { pausado = false; });
+  var x0 = null;
+  trilho.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; pausado = true; }, { passive: true });
+  trilho.addEventListener("touchend", function (e) {
+    if (x0 !== null) {
+      var dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 40) { ir(atual + (dx < 0 ? 1 : -1)); tocar(); }
+    }
+    x0 = null; pausado = false;
+  });
+  ir(0); tocar();
+})();
+</script>
+</body>
+</html>
