@@ -508,9 +508,9 @@ footer .redes a:hover { color: var(--texto); }
   <section>
     <div class="miolo seguro">
       <div class="surge">
-        <div class="rotulo">Feito para show ao vivo</div>
-        <h2>Rápido quando precisa.<br>Cuidadoso sempre.</h2>
-        <p class="lead">Show não tem "desfazer" na frente do público. Por isso o LIGHT trabalha com regras claras.</p>
+        <div class="rotulo">Construtor, não operador</div>
+        <h2>O LIGHT monta.<br>Você comanda o show.</h2>
+        <p class="lead">Show não tem "desfazer" na frente do público. Por isso o LIGHT prepara o show base com processos fechados e testados — e a mesa, no evento, é só sua.</p>
         <div class="lista">
           <div><i>✓</i><div><b>Comandos gerados por código, não por "chute" de IA</b><p>Cada automação segue regras fixas e testadas na grandMA2 onPC.</p></div></div>
           <div><i>✓</i><div><b>Travas que nunca desligam</b><p>Apagar show, resetar ou sobrescrever cue existente: o LIGHT não faz sem você.</p></div></div>
@@ -518,8 +518,8 @@ footer .redes a:hover { color: var(--texto); }
         </div>
       </div>
       <div class="modos surge">
-        <div class="linha"><div><b>Modo Construção</b><small>Mostra o plano ("vou gravar 11 presets no pool 1") e pede o seu OK.</small></div><div class="chave on" id="chC"></div></div>
-        <div class="linha"><div><b>Modo Operação</b><small>No show: executa direto, sem pergunta atrapalhando.</small></div><div class="chave" id="chO"></div></div>
+        <div class="linha"><div><b>O LIGHT, na preparação</b><small>Presets, cues, grupos, layouts e posições: mostra o plano ("vou gravar 11 presets no pool 1") e só grava com o seu OK.</small></div><div class="chave on"></div></div>
+        <div class="linha"><div><b>Você, no show</b><small>Go, cues e executores direto na mesa, sem nada no meio.</small></div><div class="chave on"></div></div>
       </div>
     </div>
   </section>
@@ -597,8 +597,10 @@ footer .redes a:hover { color: var(--texto); }
           <div class="preco-nota">&nbsp;</div>
           <ul>
             <li>Busca de fixtures por canais DMX ilimitada</li>
-            <li>Conexão com a grandMA2 e comandos simples</li>
-            <li class="lim">2 automações por dia</li>
+            <li>Comando por voz (transcrição do navegador)</li>
+            <li class="lim">2 automações de preset por dia</li>
+            <li class="lim">2 modelos de macro por dia</li>
+            <li class="lim">Organizar Layout: 2 pequenos + 1 grande por dia</li>
             <li class="lim">1 download de fixture por dia</li>
             <li class="lim">5 respostas da IA por dia no Modo Conversa</li>
             <li class="lim">Financeiro com 1 empresa · 3 anotações/dia no WhatsApp</li>
@@ -614,9 +616,11 @@ footer .redes a:hover { color: var(--texto); }
           <div class="preco"><b id="precoValor">R$ 116,90</b><span>/mês</span></div>
           <div class="preco-nota" id="precoNota">no plano anual (R$ 1.402,80 por ano)</div>
           <ul>
-            <li>Automações ilimitadas, inclusive em lote</li>
-            <li>Downloads de fixtures ilimitados</li>
-            <li>Modo Operação para o show ao vivo</li>
+            <li>Automações ilimitadas, com lote, fade e delay</li>
+            <li>Organizar Show e Organizar Posições (show base pronto)</li>
+            <li>Macros e Organizar Layout ilimitados</li>
+            <li>Downloads de fixtures ilimitados + pacote para pendrive</li>
+            <li>Comando por voz transcrito pela IA da nuvem</li>
             <li>Modo Conversa com IA na nuvem (60 respostas/dia)</li>
             <li>Financeiro completo + WhatsApp sem limite</li>
             <li>Todas as videoaulas, sem comercial</li>
@@ -735,10 +739,6 @@ var CONFIG = {
     es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("visto"); obs.unobserve(e.target); } });
   }, { threshold: .12 }) : null;
   document.querySelectorAll(".surge").forEach(function (el) { obs ? obs.observe(el) : el.classList.add("visto"); });
-
-  // ---- chaves Construção / Operação alternando ----
-  var cC = document.getElementById("chC"), cO = document.getElementById("chO");
-  setInterval(function () { cC.classList.toggle("on"); cO.classList.toggle("on"); }, 3200);
 
   // ---- demonstração (conversa animada) ----
   var calmo = false;   // digitação não é movimento de tela: roda sempre
