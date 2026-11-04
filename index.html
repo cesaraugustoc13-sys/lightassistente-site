@@ -249,6 +249,10 @@ h2 { font-size: clamp(26px, 4vw, 40px); letter-spacing: -1px; line-height: 1.15;
 
 /* chamada final */
 .final { text-align: center; padding: 90px 0; position: relative; overflow: hidden; }
+.requisitos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; max-width: 820px; margin: 30px auto 0; text-align: left; position: relative; }
+.requisitos > div { background: var(--fundo2); border: 1px solid var(--borda); border-radius: 14px; padding: 16px 18px; }
+.requisitos b { color: var(--ambar); font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; }
+.requisitos ul { margin: 8px 0 0; padding-left: 18px; color: var(--suave); font-size: 14px; display: grid; gap: 4px; }
 .final::before { content: ""; position: absolute; left: 50%; top: 0; width: 700px; height: 700px; transform: translate(-50%, -40%);
   background: radial-gradient(circle, rgba(255, 204, 0, .14), transparent 60%); z-index: -1; }
 
@@ -342,6 +346,36 @@ footer .redes a:hover { color: var(--texto); }
   display: flex; gap: 8px; }
 .cv-entrada div { flex: 1; background: #141821; border: 1px solid #2c3340; border-radius: 10px; padding: 10px 12px; color: #6b7280; font-size: 14px; }
 .cv-entrada span { background: var(--ambar); color: #111; border-radius: 10px; padding: 10px 14px; font-weight: 800; }
+
+/* timecode (amostra do Timecode LIGHT, só Full) */
+.tcs { display: grid; gap: 12px; }
+.tcs-topo { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 13px; }
+.tcs-topo b { background: #141821; border: 1px solid #2c3340; border-radius: 8px; padding: 6px 10px; }
+.tcs-topo .cor { width: 22px; height: 22px; border-radius: 6px; background: #ff3b3b; }
+.tcs-topo span { color: var(--suave); }
+.tcs-onda { position: relative; height: 120px; background: #07090d; border: 1px solid #2a2f39; border-radius: 10px; overflow: hidden; }
+.tcs-barras { position: absolute; inset: 22px 0 0; display: flex; align-items: center; gap: 2px; padding: 0 4px; }
+.tcs-barras i { flex: 1; background: #2b7fb8; border-radius: 1px; min-width: 1px; }
+.tcs-marca { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ambar); animation: entra .3s ease both; }
+.tcs-marca span { position: absolute; top: 3px; left: 4px; font-size: 11px; font-weight: 700; color: #111; background: var(--ambar);
+  padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+.tcs-agulha { position: absolute; top: 0; bottom: 0; width: 2px; background: #38bdf8; box-shadow: 0 0 8px #38bdf8; left: 0; }
+.tcs-linha { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 13px; }
+.tcs-ltc { font-family: "JetBrains Mono", monospace; border: 1px solid #2c3340; border-radius: 8px; padding: 6px 10px; color: var(--suave); }
+.tcs-ltc.bom { color: #3cc46e; border-color: rgba(60, 196, 110, .5); }
+.tcs-ltc.ruim { color: #f0605a; border-color: rgba(240, 96, 90, .5); }
+.tcs-ma { color: var(--ambar); font-weight: 700; }
+.tcs-lista { border: 1px solid #2a2f39; border-radius: 10px; overflow: hidden; }
+.tcs-lista div { display: flex; gap: 14px; padding: 7px 12px; border-bottom: 1px solid #141821; font-size: 13.5px; animation: entra .3s ease both; }
+.tcs-lista div:last-child { border-bottom: 0; }
+.tcs-lista em { font-style: normal; color: var(--ambar); font-weight: 800; min-width: 18px; }
+.tcs-lista code { font-family: "JetBrains Mono", monospace; color: var(--suave); min-width: 64px; }
+.tcs-lista .atual { background: rgba(255, 204, 0, .09); box-shadow: inset 4px 0 0 var(--ambar); }
+.tcs-lista .atual code { color: var(--ambar); }
+.tcs-med { background: #0d1015; border: 1px solid #2c3340; border-radius: 12px; padding: 14px 16px; font-size: 13.5px; display: grid; gap: 6px; }
+.tcs-med h4 { margin: 0; color: var(--ambar); letter-spacing: 1px; font-size: 13px; }
+.tcs-med div { animation: entra .3s ease both; }
+.tcs-med .p { color: #f0b4b0; }
 
 /* busca de personalidade */
 .bx-campo { display: flex; gap: 8px; flex-wrap: wrap; align-items: stretch; }
@@ -485,6 +519,12 @@ footer .redes a:hover { color: var(--texto); }
           <p>Sabe a ordem dos canais mas não o modelo? Digite a sequência e o LIGHT encontra. Baixe o arquivo e leve no pendrive para a mesa.</p>
           <div class="canais mono"><span class="sim">Dimmer</span><span class="sim">Shutter</span><span class="sim">Pan</span><span class="sim">Tilt</span><span>Color</span><span>Gobo</span><span>…</span></div>
         </div>
+        <div class="card grande surge" style="grid-column: span 6">
+          <span class="tag">NOVO · FULL</span>
+          <div class="ic">🎵</div>
+          <h3>Timecode LIGHT: show com música, sem sofrimento</h3>
+          <p>Abra a música, marque no gráfico onde cada cue entra e mande para a MA: sequência, cues e Timecode prontos. O LIGHT gera o WAV com o LTC para o maestro e, no show, um medidor confere o sinal e avisa antes de dar problema. A lista acompanha a música e mostra a última cue que entrou.</p>
+        </div>
         <div class="card media surge">
           <div class="ic">💬</div>
           <h3>Modo Conversa</h3>
@@ -552,6 +592,7 @@ footer .redes a:hover { color: var(--texto); }
           <button type="button" data-sim="conversa" class="ativo">💬 Modo Conversa</button>
           <button type="button" data-sim="busca">🔎 Procurar personalidade</button>
           <button type="button" data-sim="fin">💰 Financeiro</button>
+          <button type="button" data-sim="tc">🎵 Timecode</button>
         </div>
         <div class="sim-janela">
           <div class="sim-tit"><b></b><b></b><b></b><span class="mono" id="simTitulo">LIGHT · Modo Conversa</span><em>● demonstração</em></div>
@@ -602,6 +643,7 @@ footer .redes a:hover { color: var(--texto); }
             <li class="lim">2 modelos de macro por dia</li>
             <li class="lim">Organizar Layout: 2 pequenos + 1 grande por dia</li>
             <li class="lim">1 download de fixture por dia</li>
+            <li class="lim">Timecode só para conhecer: 1 música MP3, 30 s, 10 cues</li>
             <li class="lim">5 respostas da IA por dia no Modo Conversa</li>
             <li class="lim">Financeiro com 1 empresa · 3 anotações/dia no WhatsApp</li>
             <li class="lim">2 videoaulas por dia, com comercial</li>
@@ -619,6 +661,7 @@ footer .redes a:hover { color: var(--texto); }
             <li>Automações ilimitadas, com lote, fade e delay</li>
             <li>Do zero ao show pronto: o seu show pessoal nos aparelhos do evento — Organizar Show, PSR, Clone, Cores, Efeitos e Posições (teste real do criador: ~1 h com o show do evento já montado)</li>
             <li>Color Picker + Delay + Fade montado no seu show</li>
+            <li>Timecode LIGHT: marcações viram cues e Timecode na MA, WAV com LTC para o maestro, Modo Show e medidor do sinal</li>
             <li>Macros e Organizar Layout ilimitados</li>
             <li>Downloads de fixtures ilimitados + pacote para pendrive</li>
             <li>Comando por voz transcrito pela IA da nuvem</li>
@@ -673,6 +716,24 @@ footer .redes a:hover { color: var(--texto); }
       <p class="lead" style="margin:0 auto 28px">Baixe o LIGHT, crie sua conta grátis e sinta a diferença no próximo show-prep.</p>
       <a href="#baixar" class="btn btn-ambar" data-baixar>⬇ Baixar o LIGHT para Windows</a>
       <p class="nota" id="notaDownload">Windows 10 ou 11 · ZIP de 300 MB · descompacte e abra o LIGHT Assistente.exe</p>
+      <!-- dono 04/11: requisitos (medido no PC do criador: o LIGHT usa ~1 GB de memória com o Timecode aberto) -->
+      <div class="requisitos">
+        <div><b>Mínimo</b><ul>
+          <li>Windows 10 ou 11, 64 bits</li>
+          <li>Processador de 4 núcleos (Intel Core i5 de 8ª geração ou AMD Ryzen 5 2ª geração)</li>
+          <li>8 GB de memória</li>
+          <li>2 GB livres no disco</li>
+          <li>Tela 1366 × 768</li>
+          <li>Rede (cabo ou Wi-Fi) na mesma rede da grandMA2</li>
+        </ul></div>
+        <div><b>Recomendado</b><ul>
+          <li>16 GB de memória e disco SSD</li>
+          <li>Tela Full HD (1920 × 1080)</li>
+          <li>Notebook separado da mesa, em Join na sessão da MA</li>
+          <li>Timecode: entrada de mic ou placa de áudio USB para o medidor de LTC</li>
+          <li>Internet para conta, IA na nuvem e atualizações</li>
+        </ul></div>
+      </div>
     </div>
   </section>
 </main>
@@ -1119,6 +1180,75 @@ var CONFIG = {
     } }
   };
 
+  // ---------------- 4. TIMECODE (dono 04/11: amostra do Timecode LIGHT) ----------------
+  var TC_DUR = 12;                                    // segundos na tela
+  var TC_MARCAS = [[0.8, "entrada"], [4.2, "ataque vermelho"], [7.5, "tudo azul"], [10.1, "final"]];
+  function tcHora(t) {
+    var q = Math.floor(t * 30), s = Math.floor(q / 30) % 60, f = q % 30;
+    return "1:00:" + (s < 10 ? "0" : "") + s + ":" + (f < 10 ? "0" : "") + f;
+  }
+  function tcMontar() {
+    var barras = "", x = 7;
+    for (var i = 0; i < 120; i++) { x = (x * 9301 + 49297) % 233280; barras += '<i style="height:' + (18 + (x / 233280) * 70 + (i % 9 === 0 ? 10 : 0)).toFixed(0) + '%"></i>'; }
+    tela.innerHTML = '<div class="tcs"><div class="tcs-topo"><div class="cor"></div><b>Música de exemplo</b><span>Executor</span><b>253.101</b>' +
+      '<span>Início no relógio</span><b>1:00:00:00</b></div>' +
+      '<div class="tcs-onda"><div class="tcs-barras">' + barras + '</div><div class="tcs-agulha"></div></div>' +
+      '<div class="tcs-linha"><span class="tcs-ltc">MEDIDOR LTC</span><span class="tcs-ma"></span></div>' +
+      '<div class="tcs-lista"></div></div>';
+    return { onda: tela.querySelector(".tcs-onda"), agulha: tela.querySelector(".tcs-agulha"), ltc: tela.querySelector(".tcs-ltc"),
+             ma: tela.querySelector(".tcs-ma"), lista: tela.querySelector(".tcs-lista") };
+  }
+  function tcMarca(c, k) {
+    var m = TC_MARCAS[k];
+    c.onda.appendChild(el('<div class="tcs-marca" style="left:' + (m[0] / TC_DUR * 100) + '%"><span>' + (k + 1) + " " + m[1] + "</span></div>"));
+    c.lista.appendChild(el("<div><em>" + (k + 1) + "</em><code>00:" + (m[0] < 10 ? "0" : "") + m[0].toFixed(2) + "</code>" + m[1] + "</div>"));
+  }
+  function tcAndar(c, de, ate, id, cadaPasso) {             // a agulha anda de 'de' até 'ate' segundos
+    var t = de, cadeia = Promise.resolve();
+    function passo() {
+      return espera(50, id).then(function () {
+        t = Math.min(ate, t + 0.05 * 1.5);
+        c.agulha.style.left = (t / TC_DUR * 100) + "%";
+        if (cadaPasso) cadaPasso(t);
+        if (t < ate) return passo();
+      });
+    }
+    return cadeia.then(passo);
+  }
+  function tcAtual(c, t) {
+    var k = -1;
+    TC_MARCAS.forEach(function (m, i) { if (m[0] <= t) k = i; });
+    c.lista.querySelectorAll("div").forEach(function (d, i) { d.classList.toggle("atual", i === k); });
+    c.ma.textContent = k >= 0 ? "MA → Cue " + (k + 1) : "";
+  }
+  var TC = {
+    A: { rotulo: "Marcando as cues na música", rodar: function (id) {
+      var c = tcMontar(), feitas = 0;
+      return tcAndar(c, 0, 11.5, id, function (t) {
+        while (feitas < TC_MARCAS.length && TC_MARCAS[feitas][0] <= t) tcMarca(c, feitas++);
+      }).then(function () { toast("4 marcações = 4 cues. ENVIAR PARA A MA cria a sequência, as cues e o Timecode."); });
+    } },
+    B: { rotulo: "No show: o LTC dispara a MA", rodar: function (id) {
+      var c = tcMontar();
+      TC_MARCAS.forEach(function (m, k) { tcMarca(c, k); });
+      c.ltc.classList.add("bom");
+      return tcAndar(c, 0, 8.6, id, function (t) { c.ltc.textContent = "LTC " + tcHora(t) + " · SINAL BOM"; tcAtual(c, t); })
+        .then(function () { c.ltc.textContent = "LTC " + tcHora(8.6) + " · parado"; toast("Parou no meio: a lista mostra a última cue que entrou (Cue 3)."); });
+    } },
+    C: { rotulo: "Medidor LTC na passagem de som", rodar: function (id) {
+      tela.innerHTML = '<div class="tcs"><div class="tcs-med"><h4>MEDIDOR LTC</h4></div></div>';
+      var med = tela.querySelector(".tcs-med");
+      function linha(h) { med.appendChild(el("<div>" + h + "</div>")); return espera(420, id); }
+      return linha("Hora: 1:00:20:11 · 30 fps · entrada mono (mic)")
+        .then(function () { return linha("Nível: −22 dBFS · perdas 0 % · bordas 0 % · velocidade 100 %"); })
+        .then(function () { return linha('<span class="tcs-ltc bom">SINAL BOM</span> Pronto para o show.'); })
+        .then(function () { return espera(900, id); })
+        .then(function () { return linha('<b>Agora o técnico liga o “áudio espacial” do Windows…</b>'); })
+        .then(function () { return linha('<span class="tcs-ltc ruim">PROBLEMA</span> <span class="p">Os dois lados estão misturados: som espacial ou mesa somando L e R.</span>'); })
+        .then(function () { toast("O LIGHT avisa antes do show, e diz o que desligar."); });
+    } }
+  };
+
   // ---------------- abas e opções ----------------
   var ABAS = {
     conversa: { titulo: "LIGHT · Modo Conversa", q: "Escolha uma pergunta:", itens: CONVERSA, rodar: rodarConversa,
@@ -1130,7 +1260,11 @@ var CONFIG = {
     fin: { titulo: "LIGHT · Financeiro", q: "Escolha uma situação:", itens: FIN,
            rodar: function (k, id) { return FIN[k].rodar(id); },
            vazio: ["💰", "Escolha uma situação acima e veja o financeiro do iluminador."],
-           nota: "Telas e campos do financeiro do LIGHT. Valores de exemplo." }
+           nota: "Telas e campos do financeiro do LIGHT. Valores de exemplo." },
+    tc: { titulo: "LIGHT · Timecode", q: "Escolha uma situação:", itens: TC,
+          rodar: function (k, id) { return TC[k].rodar(id); },
+          vazio: ["🎵", "Escolha uma situação acima e veja o Timecode do LIGHT."],
+          nota: "Amostra do Timecode LIGHT (plano Full). Música e marcações de exemplo." }
   };
   var abaAtual = "conversa";
 
